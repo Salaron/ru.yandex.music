@@ -1,0 +1,90 @@
+id: ru.yandex.music
+runtime: org.freedesktop.Platform
+runtime-version: '23.08'
+sdk: org.freedesktop.Sdk
+base: org.electronjs.Electron2.BaseApp
+base-version: '23.08'
+
+command: run.sh
+
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.node20
+
+tags:
+ - proprietary
+
+finish-args:
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --socket=pulseaudio
+  - --share=network
+  - --device=dri
+
+build-options:
+  append-path: /usr/lib/sdk/node20/bin
+
+modules:
+  - name: app
+    buildsystem: simple
+    build-options:
+      env:
+        XDG_CACHE_HOME: /run/build/app/flatpak-node/cache
+        npm_config_cache: /run/build/app/flatpak-node/npm-cache
+        npm_config_nodedir: /usr/lib/sdk/node20
+        npm_config_offline: 'true'
+    build-commands:
+      - npm install --offline --ignore-scripts
+      - unzip -j yamusic.zip "*app.asar"
+      - npx asar extract app.asar app
+
+      - find . -type f -name '*.js' -exec sed -i -e 's|window.PLATFORM|"win32"|g' {} \;
+      - sed -i -e 's|enableDevTools:\ false|enableDevTools:\ true|g' app/main/config.js
+      - sed -i -e 's|enableWebSecurity:\ true|enableWebSecurity:\ false|g' app/main/config.js
+      - sed -i -e 's|enableAutoUpdate:\ true|enableAutoUpdate:\ false|g' app/main/config.js
+
+      # fix tray
+      - sed -i -e 's|deviceInfo_js_1.devicePlatform\ ===\ platform_js_1.Platform.WINDOWS|true|g' app/main/index.js
+      - sed -i -e 's|platform_js_1.Platform.WINDOWS === deviceInfo_js_1.devicePlatform|true|g' app/main/events.js
+      - sed -i -e "s|icon.ico|icon.png|g" app/main/lib/tray.js
+
+      - |
+        cd app
+        cp -r ../node_modules .
+        . ../flatpak-node/electron-builder-arch-args.sh
+
+        jq '.build.linux.target="dir"' <<<$(<package.json) > package.json
+
+        npx electron-builder -- $ELECTRON_BUILDER_ARCH_ARGS --linux --dir
+      
+      - cp -a app/dist/linux*unpacked /app/main
+      - mkdir -p /app/main/resources/assets
+      # хак: на линуксе электрон не умеет читать ico
+      - cp app/app/apple-touch-icon.png /app/main/resources/assets/icon.png
+    sources:
+      - generated-sources.json
+      - type: file
+        path: package.json
+      - type: file
+        path: package-lock.json
+      - type: file
+        dest-filename: yamusic.zip
+        url: https://music-desktop-application.s3.yandex.net/stable/Yandex_Music_x64_5.31.2.zip
+        sha256: 2be1456119378bf2fc50af87109ceaf12700a00cc738d93c8916953c030d165b
+
+  - name: desktop
+    buildsystem: simple
+    build-commands:
+      - install -Dm755 -t /app/bin/ run.sh
+      - install -Dm644 ru.yandex.music.svg /app/share/icons/hicolor/scalable/apps/ru.yandex.music.svg
+      - install -Dm644 ru.yandex.music.appdata.xml /app/share/appdata/ru.yandex.music.appdata.xml
+      - install -Dm644 ru.yandex.music.desktop /app/share/applications/ru.yandex.music.desktop
+    sources:
+      - type: file
+        path: run.sh
+      - type: file
+        path: ru.yandex.music.appdata.xml
+      - type: file
+        path: ru.yandex.music.desktop
+      - type: file
+        path: ru.yandex.music.svg

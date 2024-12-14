@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Yandex Music
+Name[ru]=Яндекс Музыка
+GenericName=Music Player
+Icon=ru.yandex.music
+Exec=run.sh %U
+Terminal=false
+Categories=Audio;Music;Player;AudioVideo;
+StartupWMClass=YandexMusic

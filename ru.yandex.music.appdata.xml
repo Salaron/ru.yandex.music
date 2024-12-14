@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+  <id>ru.yandex.music</id>
+  <provides><id>ru.yandex.music.desktop</id></provides>
+  <launchable type="desktop-id">ru.yandex.music.desktop</launchable>
+  <name>Yandex Music</name>
+  <developer_name>Yandex</developer_name>
+  <summary>Online music streaming service</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>LicenseRef-proprietary=https://yandex.ru/legal/music_mobile_agreement/index.html</project_license>
+  <url type="homepage">https://music.yandex.ru</url>
+  <url type="help">https://yandex.com/support/music/ru/index.html</url>
+  <description>
+    <p>Yandex Music is a service for finding and listening to music and podcasts that provides personalized recommendations for each user. If you purchase a subscription, you can use Yandex Music anywhere in the world.</p>
+  </description>
+  <screenshots>
+  </screenshots>
+  <releases>
+  </releases>
+  <content_rating type="oars-1.1"/>
+</component>
