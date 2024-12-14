@@ -70,7 +70,10 @@ modules:
       - type: file
         dest-filename: yamusic.zip
         url: https://music-desktop-application.s3.yandex.net/stable/Yandex_Music_x64_5.31.2.zip
-        sha256: 2be1456119378bf2fc50af87109ceaf12700a00cc738d93c8916953c030d165b
+        sha512: 98bb85d5ede567ef1a4c89c8950442c8d0192c561c20d86168c57d4b651067d16e24f9440f4a8e3b7fd0c1577724a6e4c32ca9803eecb9ed6e615c4e9fdb8ef4
+        x-checker-data:
+          type: electron-updater
+          url: https://music-desktop-application.s3.yandex.net/stable/latest-mac.yml
 
   - name: desktop
     buildsystem: simple
