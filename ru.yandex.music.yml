@@ -1,85 +1,81 @@
 id: ru.yandex.music
 runtime: org.freedesktop.Platform
-runtime-version: '23.08'
+runtime-version: '24.08'
 sdk: org.freedesktop.Sdk
 base: org.electronjs.Electron2.BaseApp
-base-version: '23.08'
+base-version: '24.08'
 
 command: run.sh
-
-sdk-extensions:
-  - org.freedesktop.Sdk.Extension.node20
 
 tags:
  - proprietary
 
 finish-args:
   - --share=ipc
-  - --socket=fallback-x11
   - --socket=wayland
+  - --socket=x11
   - --socket=pulseaudio
   - --share=network
   - --device=dri
-
-build-options:
-  append-path: /usr/lib/sdk/node20/bin
+  - --talk-name=org.gnome.SettingsDaemon.MediaKeys
+  - --talk-name=org.gnome.SessionManager
+  - --talk-name=com.canonical.AppMenu.Registrar
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --talk-name=org.freedesktop.Notifications
+  - --own-name=org.mpris.MediaPlayer2.chromium.*
+  - --env=XCURSOR_PATH=/run/host/user-share/icons:/run/host/share/icons
 
 modules:
-  - name: app
+  - name: repack-deb
     buildsystem: simple
-    build-options:
-      env:
-        XDG_CACHE_HOME: /run/build/app/flatpak-node/cache
-        npm_config_cache: /run/build/app/flatpak-node/npm-cache
-        npm_config_nodedir: /usr/lib/sdk/node20
-        npm_config_offline: 'true'
     build-commands:
-      - npm install --offline --ignore-scripts
-      - unzip -j yamusic.zip "*app.asar"
-      - npx asar extract app.asar app
+      - ar x Yandex_Music.deb
+      - tar xf data.tar.xz
+      - |
+        for icon in $(find ./usr/share/icons -type f -name "*.png"); do
+          mv "$icon" $(echo $icon | sed -e "s|yandexmusic.png|ru.yandex.music.png|g")
+        done
+      - cp -r ./usr/share/icons /app/share/icons
+      - cp -r "./opt/$(ls -AU ./opt | head -1)" /app/yandexmusic
+      - rm /app/yandexmusic/resources/package-type
+    sources:
+      - type: file
+        dest-filename: Yandex_Music.deb
+        url: https://music-desktop-application.s3.yandex.net/stable/Yandex_Music_amd64_5.42.0.deb
+        sha512: a562f83961be2bc8fb5846fd1579188fd0db41cc6c84fb149a116bd0ccd6bd8c5f8bad1dabde8235dbd2ee10efb8e51d7d37f06af2d7486cd9c7b744ec0ee57c
+        x-checker-data:
+          type: electron-updater
+          url: https://music-desktop-application.s3.yandex.net/stable/latest-linux.yml
 
-      - find . -type f -name '*.js' -exec sed -i -e 's|window.PLATFORM|"win32"|g' {} \;
+  - name: patch-asar
+    buildsystem: simple
+    build-commands:
+      - ./asar.py extract /app/yandexmusic/resources/app.asar ./app
+      - mv /app/yandexmusic/resources/app.asar /app/yandexmusic/resources/app.asar.bak
+
       - sed -i -e 's|enableDevTools:\ false|enableDevTools:\ true|g' app/main/config.js
       - sed -i -e 's|enableWebSecurity:\ true|enableWebSecurity:\ false|g' app/main/config.js
       - sed -i -e 's|enableAutoUpdate:\ true|enableAutoUpdate:\ false|g' app/main/config.js
 
-      # fix tray
-      - sed -i -e 's|deviceInfo_js_1.devicePlatform\ ===\ platform_js_1.Platform.WINDOWS|true|g' app/main/index.js
+      - find . -type f -name '*.js' -exec sed -i -e 's|window.PLATFORM|"win32"|g' {} \;
+      - sed -i -e 's|deviceInfo_js_1.devicePlatform === platform_js_1.Platform.WINDOWS|true|g' app/main/index.js
       - sed -i -e 's|platform_js_1.Platform.WINDOWS === deviceInfo_js_1.devicePlatform|true|g' app/main/events.js
+
+      # Electron doesn't support .ico files on Linux
       - sed -i -e "s|icon.ico|icon.png|g" app/main/lib/tray.js
+      - cp tray-icon.png /app/yandexmusic/resources/assets/icon.png
 
-      - |
-        cd app
-        cp -r ../node_modules .
-        . ../flatpak-node/electron-builder-arch-args.sh
-
-        jq '.build.linux.target="dir"' <<<$(<package.json) > package.json
-
-        npx electron-builder -- $ELECTRON_BUILDER_ARCH_ARGS --linux --dir
-      
-      - cp -a app/dist/linux*unpacked /app/main
-      - mkdir -p /app/main/resources/assets
-      # хак: на линуксе электрон не умеет читать ico
-      - cp app/app/apple-touch-icon.png /app/main/resources/assets/icon.png
+      - ./asar.py pack ./app /app/yandexmusic/resources/app.asar
     sources:
-      - generated-sources.json
       - type: file
-        path: package.json
+        path: asar.py
       - type: file
-        path: package-lock.json
-      - type: file
-        dest-filename: yamusic.zip
-        url: https://music-desktop-application.s3.yandex.net/stable/Yandex_Music_x64_5.31.2.zip
-        sha512: 98bb85d5ede567ef1a4c89c8950442c8d0192c561c20d86168c57d4b651067d16e24f9440f4a8e3b7fd0c1577724a6e4c32ca9803eecb9ed6e615c4e9fdb8ef4
-        x-checker-data:
-          type: electron-updater
-          url: https://music-desktop-application.s3.yandex.net/stable/latest-mac.yml
+        path: tray-icon.png
 
   - name: desktop
     buildsystem: simple
     build-commands:
       - install -Dm755 -t /app/bin/ run.sh
-      - install -Dm644 ru.yandex.music.svg /app/share/icons/hicolor/scalable/apps/ru.yandex.music.svg
       - install -Dm644 ru.yandex.music.appdata.xml /app/share/appdata/ru.yandex.music.appdata.xml
       - install -Dm644 ru.yandex.music.desktop /app/share/applications/ru.yandex.music.desktop
     sources:
@@ -89,5 +85,3 @@ modules:
         path: ru.yandex.music.appdata.xml
       - type: file
         path: ru.yandex.music.desktop
-      - type: file
-        path: ru.yandex.music.svg
