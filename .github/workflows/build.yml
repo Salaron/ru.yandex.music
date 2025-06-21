@@ -1,0 +1,31 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+jobs:
+  build:
+    name: Build Flatpak package
+    runs-on: ubuntu-latest
+
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-48
+      options: --privileged
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build package
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: ru.yandex.music.flatpak
+          manifest-path: ru.yandex.music.yml
+          cache-key: flatpak-builder-${{ github.sha }}
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
+        with:
+          files: ru.yandex.music.flatpak
