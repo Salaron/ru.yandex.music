@@ -1,16 +1,16 @@
-## Yandex Music - Flatpak
+# Yandex Music — Flatpak
 
-This is a Flatpak package for the **native** Linux version of the Yandex Music app.
+Flatpak package for the **native** Linux version of the Yandex Music app.
 
-### Installation
+## Installation
 
-Download the Flatpak bundle from Releases page and install it.
+Download Flatpak bundle from Releases page and install it.
 
 ```
 flatpak install ./ru.yandex.music.flatpak
 ```
 
-### Build
+## Build
 
 ```
 git clone https://github.com/Salaron/ru.yandex.music
