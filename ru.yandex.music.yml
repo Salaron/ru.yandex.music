@@ -8,7 +8,7 @@ base-version: '24.08'
 command: run.sh
 
 tags:
- - proprietary
+  - proprietary
 
 finish-args:
   - --share=ipc
@@ -41,8 +41,8 @@ modules:
     sources:
       - type: file
         dest-filename: Yandex_Music.deb
-        url: https://music-desktop-application.s3.yandex.net/stable/Yandex_Music_amd64_5.56.0.deb
-        sha512: 9b9ed44670e664f4145d1f1711bf2190d2a890e06b437d5a05769144f8593ac67321309f5d8e5543d391b01471ca88ead16826641a829408af66358a1acdb0e8
+        url: https://music-desktop-application.s3.yandex.net/stable/Yandex_Music_amd64_5.57.0.deb
+        sha512: 243e8bdd21e1536e9d99cc5ea2ecf3970fefa482b7d254d32d79cfe5ae4ed09a2f6e3cb835780d8b1a7422be43d500eb657e8b087fb6a9a8e4a3dac9dc941a59
         x-checker-data:
           type: electron-updater
           url: https://music-desktop-application.s3.yandex.net/stable/latest-linux.yml
@@ -57,9 +57,12 @@ modules:
       - sed -i -e 's|enableWebSecurity:\ true|enableWebSecurity:\ false|g' app/main/config.js
       - sed -i -e 's|enableAutoUpdate:\ true|enableAutoUpdate:\ false|g' app/main/config.js
 
-      - find . -type f -name '*.js' -exec sed -i -e 's|window.PLATFORM|"win32"|g' {} \;
-      - sed -i -e 's|deviceInfo_js_1.devicePlatform === platform_js_1.Platform.WINDOWS|true|g' app/main/index.js
-      - sed -i -e 's|platform_js_1.Platform.WINDOWS === deviceInfo_js_1.devicePlatform|true|g' app/main/events.js
+      - find . -type f -name '*.js' -exec sed -i -e 's|window.PLATFORM|"win32"|g'
+        {} \;
+      - sed -i -e 's|deviceInfo_js_1.devicePlatform === platform_js_1.Platform.WINDOWS|true|g'
+        app/main/index.js
+      - sed -i -e 's|platform_js_1.Platform.WINDOWS === deviceInfo_js_1.devicePlatform|true|g'
+        app/main/events.js
 
       # Electron doesn't support .ico files on Linux
       - sed -i -e "s|icon.ico|icon.png|g" app/main/lib/tray.js

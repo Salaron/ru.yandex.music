@@ -16,6 +16,9 @@
   <screenshots>
   </screenshots>
   <releases>
+    <release version="5.57.0" date="2025-06-25">
+      <description></description>
+    </release>
   </releases>
   <content_rating type="oars-1.1"/>
 </component>
