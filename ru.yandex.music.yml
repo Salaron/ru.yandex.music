@@ -41,8 +41,8 @@ modules:
     sources:
       - type: file
         dest-filename: Yandex_Music.deb
-        url: https://music-desktop-application.s3.yandex.net/stable/Yandex_Music_amd64_5.67.0.deb
-        sha512: 9e08d78a6165c2423e729cae5b548a1c75409404ac3cd3ab74537865fc39526ad2ed56f9b451ad1da68dde291297b33eb758e36df57c3da442a08b5dd7560385
+        url: https://music-desktop-application.s3.yandex.net/stable/Yandex_Music_amd64_5.71.2.deb
+        sha512: 7184fe65c6747288b4e8e3dd6f3ce4c7b22c5bc8ed444f18dee4e76a444507af30a5e71e2c599cdd131efbd3f3c5dd7f261a6bd87e2ac5fbb4d3cd5366d07c07
         x-checker-data:
           type: electron-updater
           url: https://music-desktop-application.s3.yandex.net/stable/latest-linux.yml
