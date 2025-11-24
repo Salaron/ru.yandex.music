@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        default: 'v'
+        description: 'Version'
+        required: true
+        type: string
+
+env:
+  RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+
+jobs:
+  create_tag:
+    name: Create Git tag
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create Git tag
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git tag ${{ inputs.tag }}
+          git push origin ${{ inputs.tag }}
+
+  build:
+    name: Build & Release
+    needs: create_tag
+    runs-on: ubuntu-latest
+
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-48
+      options: --privileged
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build package
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: ru.yandex.music.flatpak
+          manifest-path: ru.yandex.music.yml
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ru.yandex.music.flatpak
+          tag_name: ${{ env.RELEASE_TAG }}
+
+
+

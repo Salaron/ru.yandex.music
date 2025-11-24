@@ -1,9 +1,9 @@
 id: ru.yandex.music
 runtime: org.freedesktop.Platform
-runtime-version: '24.08'
+runtime-version: '25.08'
 sdk: org.freedesktop.Sdk
 base: org.electronjs.Electron2.BaseApp
-base-version: '24.08'
+base-version: '25.08'
 
 command: run.sh
 
@@ -46,34 +46,6 @@ modules:
         x-checker-data:
           type: electron-updater
           url: https://music-desktop-application.s3.yandex.net/stable/latest-linux.yml
-
-  - name: patch-asar
-    buildsystem: simple
-    build-commands:
-      - ./asar.py extract /app/yandexmusic/resources/app.asar ./app
-      - mv /app/yandexmusic/resources/app.asar /app/yandexmusic/resources/app.asar.bak
-
-      - sed -i -e 's|enableDevTools:\ false|enableDevTools:\ true|g' app/main/config.js
-      - sed -i -e 's|enableWebSecurity:\ true|enableWebSecurity:\ false|g' app/main/config.js
-      - sed -i -e 's|enableAutoUpdate:\ true|enableAutoUpdate:\ false|g' app/main/config.js
-
-      - find . -type f -name '*.js' -exec sed -i -e 's|window.PLATFORM|"win32"|g'
-        {} \;
-      - sed -i -e 's|deviceInfo_js_1.devicePlatform === platform_js_1.Platform.WINDOWS|true|g'
-        app/main/index.js
-      - sed -i -e 's|platform_js_1.Platform.WINDOWS === deviceInfo_js_1.devicePlatform|true|g'
-        app/main/events.js
-
-      # Electron doesn't support .ico files on Linux
-      - sed -i -e "s|icon.ico|icon.png|g" app/main/lib/tray.js
-      - cp tray-icon.png /app/yandexmusic/resources/assets/icon.png
-
-      - ./asar.py pack ./app /app/yandexmusic/resources/app.asar
-    sources:
-      - type: file
-        path: asar.py
-      - type: file
-        path: tray-icon.png
 
   - name: desktop
     buildsystem: simple
